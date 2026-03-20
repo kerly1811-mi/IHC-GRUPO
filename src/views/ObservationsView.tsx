@@ -31,7 +31,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({ data, onAdd,
                 <th>Problema detectado</th>
                 <th style={{ width: '120px' }}>Severidad</th>
                 <th>Mejora propuesta</th>
-                <th style={{ width: '60px' }}>Borrar</th>
+                <th style={{ width: '60px' }}>Acción</th>
               </tr>
             </thead>
             <tbody>

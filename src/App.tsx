@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { useUsabilityApp } from './controllers/useUsabilityApp';
 import { TabNavigation } from './components/TabNavigation';
@@ -6,15 +6,18 @@ import { PlanView } from './views/PlanView';
 import { ScriptView } from './views/ScriptView';
 import { ObservationsView } from './views/ObservationsView';
 import { FindingsView } from './views/FindingsView';
+import { Trash2, AlertTriangle } from 'lucide-react';
 
 const App: React.FC = () => {
   const { 
     activeTab, setActiveTab, loading, allPlans,
-    testPlan, handleSavePlan, handleCreateNewPlan, loadFullPlan,
+    testPlan, handleSavePlan, handleCreateNewPlan, loadFullPlan, handleDeletePlan,
     tasks, handleAddTask, handleSaveTask, handleDeleteTask,
     observations, handleAddObservation, handleSaveObservation, handleDeleteObservation,
     findings, handleAddFinding, handleSaveFinding, handleDeleteFinding
   } = useUsabilityApp();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (loading) {
     return (
@@ -27,11 +30,10 @@ const App: React.FC = () => {
   return (
     <div className="container">
       <header className="main-header">
-        <h1>Usability Hub & Monitoring</h1>
-        <p>Plataforma para la gestión de pruebas de usabilidad y seguimiento de mejoras bajo estándares WCAG.</p>
+        <h1>Gestión de planes de usabilidad</h1>
+        <p>Plataforma para la gestión de pruebas de usabilidad.</p>
       </header>
 
-      {/* SELECTOR DE PROYECTO PROFESIONAL */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -44,7 +46,7 @@ const App: React.FC = () => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <label htmlFor="plan-selector" style={{ fontWeight: 'bold', color: '#1e293b' }}>Seleccionar Plan:</label>
+          <label htmlFor="plan-selector" style={{ fontWeight: 'bold', color: '#1e293b' }}>Plan Actual:</label>
           <select 
             id="plan-selector"
             value={testPlan.id || ''} 
@@ -52,38 +54,30 @@ const App: React.FC = () => {
               const selected = allPlans.find(p => p.id === e.target.value);
               if (selected) loadFullPlan(selected);
             }}
-            style={{ 
-              padding: '10px', 
-              borderRadius: '6px', 
-              border: '1px solid #cbd5e1', 
-              minWidth: '300px',
-              backgroundColor: 'white',
-              fontSize: '0.95rem'
-            }}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', minWidth: '300px', backgroundColor: 'white' }}
           >
-            <option value="" disabled>-- Selecciona un plan guardado --</option>
+            <option value="" disabled>-- Selecciona un plan --</option>
             {allPlans.map(plan => (
               <option key={plan.id} value={plan.id}>
-                {plan.product || 'Sin nombre'} - {plan.module || 'Global'} ({new Date(plan.created_at!).toLocaleDateString()})
+                {plan.product || 'Sin nombre'} ({new Date(plan.created_at!).toLocaleDateString()})
               </option>
             ))}
           </select>
+          
+          {testPlan.id && (
+            <button 
+              onClick={() => setShowDeleteModal(true)}
+              style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: '5px' }}
+              title="Eliminar este plan"
+            >
+              <Trash2 size={22} />
+            </button>
+          )}
         </div>
         
         <button 
           onClick={handleCreateNewPlan}
-          style={{ 
-            backgroundColor: '#0f172a', 
-            color: 'white', 
-            padding: '10px 20px', 
-            borderRadius: '6px', 
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            border: 'none',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1e293b'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0f172a'}
+          style={{ backgroundColor: '#0f172a', color: 'white', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', border: 'none' }}
         >
           + Crear Nuevo Plan
         </button>
@@ -134,9 +128,33 @@ const App: React.FC = () => {
           />
         )}
       </main>
+
+      {/* MODAL DE CONFIRMACIÓN DE BORRADO */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <AlertTriangle size={48} color="#dc2626" style={{ marginBottom: '1rem' }} />
+            <h3 className="modal-title">¿Eliminar Plan de Prueba?</h3>
+            <p>Estás a punto de borrar el plan <strong>"{testPlan.product}"</strong> y todos sus datos asociados (tareas, observaciones y hallazgos).</p>
+            <p style={{ fontWeight: 'bold' }}>Esta acción no se puede deshacer.</p>
+            
+            <div className="modal-buttons">
+              <button className="btn-cancel" onClick={() => setShowDeleteModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn-confirm-delete" onClick={() => {
+                handleDeletePlan(testPlan.id!);
+                setShowDeleteModal(false);
+              }}>
+                Sí, eliminar permanentemente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <footer style={{ marginTop: '3rem', padding: '1rem 0', borderTop: '1px solid var(--border)', fontSize: '0.8rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-        Diseñado bajo estándares WCAG 2.1 (AA) para accesibilidad web.
+        Grupo 3: Mateo Auz, Kerly Chicaiza, Bryan Quitto, Pedro Supe
       </footer>
     </div>
   );

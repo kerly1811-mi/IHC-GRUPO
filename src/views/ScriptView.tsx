@@ -66,7 +66,7 @@ export const ScriptView: React.FC<ScriptViewProps> = ({ testPlan, tasks, onSaveT
                   <th style={{ width: '35%' }}>Texto de la tarea</th>
                   <th style={{ width: '35%' }}>Pregunta de seguimiento</th>
                   <th>Éxito esperado</th>
-                  <th style={{ width: '60px' }}>Borrar</th>
+                  <th style={{ width: '60px' }}>Acción</th>
                 </tr>
               </thead>
               <tbody>

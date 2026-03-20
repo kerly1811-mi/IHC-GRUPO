@@ -35,7 +35,6 @@ export const useUsabilityApp = () => {
 
     if (!error && data && data.length > 0) {
       setAllPlans(data);
-      // Cargar el más reciente por defecto al iniciar
       await loadFullPlan(data[0]);
     } else {
       setLoading(false);
@@ -65,6 +64,19 @@ export const useUsabilityApp = () => {
     setObservations([]);
     setFindings([]);
     setActiveTab('plan');
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    const { error } = await supabase.from('test_plans').delete().eq('id', id);
+    if (!error) {
+      const remainingPlans = allPlans.filter(p => p.id !== id);
+      setAllPlans(remainingPlans);
+      if (remainingPlans.length > 0) {
+        await loadFullPlan(remainingPlans[0]);
+      } else {
+        handleCreateNewPlan();
+      }
+    }
   };
 
   const handleSavePlan = async (fullPlan: TestPlan) => {
@@ -148,7 +160,7 @@ export const useUsabilityApp = () => {
 
   return {
     activeTab, setActiveTab, loading, allPlans,
-    testPlan, handleSavePlan, handleCreateNewPlan, loadFullPlan,
+    testPlan, handleSavePlan, handleCreateNewPlan, loadFullPlan, handleDeletePlan,
     tasks, handleAddTask, handleSaveTask, handleDeleteTask,
     observations, handleAddObservation, handleSaveObservation, handleDeleteObservation,
     findings, handleAddFinding, handleSaveFinding, handleDeleteFinding

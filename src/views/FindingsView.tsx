@@ -28,7 +28,7 @@ export const FindingsView: React.FC<FindingsViewProps> = ({ data, onAdd, onSave,
                 <th>Recomendación</th>
                 <th style={{ width: '120px' }}>Prioridad</th>
                 <th style={{ width: '130px' }}>Estado</th>
-                <th style={{ width: '60px' }}>Borrar</th>
+                <th style={{ width: '60px' }}>Acción</th>
               </tr>
             </thead>
             <tbody>
