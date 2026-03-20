@@ -1,0 +1,62 @@
+/* src/styles/theme.css */
+:root {
+  --primary-color: #003366;
+  --secondary-color: #f4f7f9;
+  --text-color: #333333;
+  --text-light: #ffffff;
+  --accent-color: #0056b3;
+  --border-color: #cccccc;
+  --focus-outline: #2563eb;
+  
+  --success: #166534;
+  --warning: #854d0e;
+  --danger: #991b1b;
+  
+  --severity-alta: #fee2e2;
+  --severity-media: #fef9c3;
+  --severity-baja: #f0fdf4;
+}
+
+/* Estilos para inputs y áreas de texto */
+input, textarea, select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid var(--focus-outline);
+  background-color: #ffffff !important;
+}
+
+/* Tabs mejoradas para contraste */
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  border-bottom: 3px solid var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  border: none;
+  background: #f1f5f9; /* Gris claro pero visible */
+  color: #475569; /* Gris oscuro para contraste */
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background: #e2e8f0;
+  color: var(--primary-color);
+}
+
+.tab-button[aria-selected="true"] {
+  background: var(--primary-color);
+  color: var(--text-light);
+}
