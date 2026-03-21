@@ -1,4 +1,4 @@
-export type DashboardTab = 'plan' | 'script' | 'observations' | 'findings';
+export type DashboardTab = 'plan' | 'script' | 'observations' | 'findings' | 'reports'; // aumente reports
 export type Severity = 'Baja' | 'Media' | 'Alta' | 'Crítica';
 export type Priority = 'Baja' | 'Media' | 'Alta';
 export type SuccessStatus = 'Sí' | 'No' | 'Con ayuda';

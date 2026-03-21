@@ -13,26 +13,36 @@
   --danger-hover: #fee2e2;
 }
 
+/* ── FIX: El root ocupa todo el ancho para que margin:auto funcione ── */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── El body NO usa flexbox — evita el problema de centrado que corta contenido ── */
 body {
   margin: 0;
+  padding: 0;
   background-color: var(--bg-page);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  display: flex;
-  justify-content: center;
   min-height: 100vh;
   color: var(--text-main);
   overflow-y: scroll;
 }
 
+/* ── Container: centrado con margin auto, nunca más ancho que la pantalla ── */
 .container {
-  width: 1550px; /* Cambiado de 100% a un ancho fijo */
-  max-width: 100%; /* Asegura que en pantallas pequeñas no se desborde */
+  width: min(1550px, 100vw);
+  max-width: 100vw;
+  margin: 0 auto;
   background-color: var(--white);
   min-height: 100vh;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
   box-sizing: border-box;
   padding: 0 2rem 4rem 2rem;
-  overflow-x: hidden;
 }
 
 .main-header {
@@ -184,7 +194,6 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Corrección para autocompletado (Autofill) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
@@ -210,13 +219,14 @@ select {
 
 .data-table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
   display: block;
 }
 
 .data-table {
   width: 100%;
-  min-width: 1200px; /* Asegura un ancho mínimo para que no se amontone la info en tablas grandes */
+  min-width: 1200px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -407,4 +417,90 @@ select {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+}
+
+/* ── FIX 2.4.7 Focus Visible — todos los elementos interactivos deben tener foco visible ── */
+#plan-search-input:focus {
+  outline: 3px solid var(--focus) !important;
+  outline-offset: 2px !important;
+  border-radius: 2px;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — solo ajusta padding y texto
+   El diseño alternativo lo manejan los componentes
+   ══════════════════════════════════════════════ */
+
+/* Tablet (max 1023px) */
+@media (max-width: 1023px) {
+  .container {
+    padding: 0 1rem 3rem 1rem;
+  }
+
+  .main-header {
+    margin: 0 -1rem 1.5rem -1rem;
+  }
+
+  .row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .tab-button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* Móvil (max 767px) */
+@media (max-width: 767px) {
+  .container {
+    padding: 0 0.75rem 2rem 0.75rem;
+  }
+
+  .main-header {
+    margin: 0 -0.75rem 1rem -0.75rem;
+    padding: 1.5rem 0.75rem;
+  }
+
+  .main-header h1 {
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-button {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  .view-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
 }

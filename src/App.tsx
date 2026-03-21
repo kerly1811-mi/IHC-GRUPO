@@ -6,6 +6,7 @@ import { PlanView } from './views/PlanView';
 import { ScriptView } from './views/ScriptView';
 import { ObservationsView } from './views/ObservationsView';
 import { FindingsView } from './views/FindingsView';
+import { ReportsView } from './views/ReportsView';
 import { Trash2, AlertTriangle, Search, ChevronDown, X } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -22,7 +23,6 @@ const App: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -33,7 +33,6 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filtrar planes (máximo 10)
   const filteredPlans = allPlans
     .filter(plan => 
       (plan.product?.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -60,22 +59,27 @@ const App: React.FC = () => {
         <p>Plataforma para la gestión de pruebas de usabilidad.</p>
       </header>
 
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '1.2rem', 
-        backgroundColor: '#f8fafc', 
-        borderRadius: '10px', 
-        marginBottom: '1.5rem',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-        position: 'relative'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
+      {/* Zona de selección de plan — dentro de un region landmark */}
+      <div
+        role="region"
+        aria-label="Selector de plan de prueba"
+        style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          padding: '1.2rem', 
+          backgroundColor: '#f8fafc', 
+          borderRadius: '10px', 
+          marginBottom: '1.5rem',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: '1 1 200px', minWidth: 0 }}>
           <label htmlFor="plan-search-input" style={{ fontWeight: 'bold', color: '#1e293b', whiteSpace: 'nowrap' }}>Plan Actual:</label>
           
-          <div ref={dropdownRef} style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
+          <div ref={dropdownRef} style={{ position: 'relative', flex: 1, minWidth: 0 }}>
             <div 
               style={{ 
                 display: 'flex', 
@@ -88,22 +92,28 @@ const App: React.FC = () => {
               }}
               onClick={() => setIsDropdownOpen(true)}
             >
-              <Search size={18} color="#64748b" style={{ marginRight: '8px' }} />
+              <Search size={18} color="#64748b" style={{ marginRight: '8px' }} aria-hidden="true" />
               <input 
                 id="plan-search-input"
                 type="text"
                 placeholder="Buscar por producto o módulo..."
                 value={isDropdownOpen ? searchTerm : currentDisplayName}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => {
+                onFocus={(e) => {
                   setSearchTerm('');
                   setIsDropdownOpen(true);
+                  e.target.style.outline = '3px solid #2563eb';
+                  e.target.style.outlineOffset = '2px';
                 }}
+                onBlur={(e) => {
+                  e.target.style.outline = '';
+                  e.target.style.outlineOffset = '';
+                }}
+                aria-label="Plan Actual: buscar plan de prueba"
                 style={{ 
                   border: 'none', 
                   padding: '8px 0', 
                   width: '100%', 
-                  outline: 'none',
                   fontSize: '0.95rem',
                   color: isDropdownOpen ? '#1e293b' : (testPlan.id ? '#1e293b' : '#94a3b8'),
                   fontWeight: isDropdownOpen ? 'normal' : (testPlan.id ? '600' : 'normal')
@@ -183,10 +193,11 @@ const App: React.FC = () => {
           {testPlan.id && (
             <button 
               onClick={() => setShowDeleteModal(true)}
-              style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
+              style={{ background: 'none', border: '2px solid transparent', color: '#dc2626', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center', borderRadius: '4px' }}
               title="Eliminar este plan"
+              aria-label="Eliminar plan actual"
             >
-              <Trash2 size={20} />
+              <Trash2 size={20} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -200,51 +211,56 @@ const App: React.FC = () => {
             borderRadius: '6px', 
             cursor: 'pointer', 
             fontWeight: 'bold', 
-            border: 'none',
-            marginLeft: '20px',
-            whiteSpace: 'nowrap'
+            border: '2px solid transparent',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
         >
           + Crear Nuevo Plan
         </button>
       </div>
 
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <main style={{ minHeight: '60vh' }}>
+      <main id="main-content" style={{ minHeight: '60vh' }}>
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         {activeTab === 'plan' && (
-          <PlanView 
-            data={testPlan} 
-            tasks={tasks}
-            onUpdate={handleSavePlan} 
-            onAddTask={handleAddTask}
-            onSaveTask={handleSaveTask}
-            onDeleteTask={handleDeleteTask}
-          />
+          <div id="plan-panel" role="tabpanel" aria-labelledby="plan-tab">
+            <PlanView 
+              data={testPlan} 
+              tasks={tasks}
+              onUpdate={handleSavePlan} 
+              onAddTask={handleAddTask}
+              onSaveTask={handleSaveTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          </div>
         )}
         
         {activeTab === 'script' && (
-          <ScriptView 
-            testPlan={testPlan}
-            tasks={tasks}
-            onUpdatePlan={handleSavePlan}
-            onSaveTask={handleSaveTask}
-            onAddTask={handleAddTask}
-            onDeleteTask={handleDeleteTask}
-            onGoToPlan={() => setActiveTab('plan')}
-          />
+          <div id="script-panel" role="tabpanel" aria-labelledby="script-tab">
+            <ScriptView 
+              testPlan={testPlan}
+              tasks={tasks}
+              onUpdatePlan={handleSavePlan}
+              onSaveTask={handleSaveTask}
+              onAddTask={handleAddTask}
+              onDeleteTask={handleDeleteTask}
+              onGoToPlan={() => setActiveTab('plan')}
+            />
+          </div>
         )}
 
         {activeTab === 'observations' && (
-          <ObservationsView 
-            data={observations}
-            planId={testPlan.id}
-            productName={testPlan.product}
-            onAdd={handleAddObservation}
-            onSave={handleSaveObservation}
-            onDelete={handleDeleteObservation}
-            onGoToPlan={() => setActiveTab('plan')}
-          />
+          <div id="observations-panel" role="tabpanel" aria-labelledby="observations-tab">
+            <ObservationsView 
+              data={observations}
+              planId={testPlan.id}
+              productName={testPlan.product}
+              onAdd={handleAddObservation}
+              onSave={handleSaveObservation}
+              onDelete={handleDeleteObservation}
+              onGoToPlan={() => setActiveTab('plan')}
+            />
+          </div>
         )}
 
         {activeTab === 'findings' && (
@@ -258,9 +274,18 @@ const App: React.FC = () => {
             onGoToPlan={() => setActiveTab('plan')}
           />
         )}
+
+        {activeTab === 'reports' && (
+          <ReportsView
+            testPlan={testPlan}
+            tasks={tasks}
+            observations={observations}
+            findings={findings}
+            onGoToPlan={() => setActiveTab('plan')}
+          />
+        )}
       </main>
 
-      {/* MODAL DE CONFIRMACIÓN DE BORRADO */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content">

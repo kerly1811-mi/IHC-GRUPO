@@ -1,7 +1,7 @@
 // src/components/TabNavigation.tsx
 import React from 'react';
 import { DashboardTab } from '../models/types';
-import { ClipboardList, FileText, Search, BarChart } from 'lucide-react';
+import { ClipboardList, FileText, Search, BarChart, BarChart2 } from 'lucide-react';
 
 interface TabNavigationProps {
   activeTab: DashboardTab;
@@ -10,10 +10,11 @@ interface TabNavigationProps {
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'plan', label: 'Plan de Prueba', icon: <ClipboardList size={18} aria-hidden="true" /> },
-    { id: 'script', label: 'Guion y Tareas', icon: <FileText size={18} aria-hidden="true" /> },
-    { id: 'observations', label: 'Registro Observación', icon: <Search size={18} aria-hidden="true" /> },
-    { id: 'findings', label: 'Hallazgos y Mejoras', icon: <BarChart size={18} aria-hidden="true" /> },
+    { id: 'plan',         label: 'Plan de Prueba',      icon: <ClipboardList size={18} aria-hidden="true" /> },
+    { id: 'script',       label: 'Guion y Tareas',       icon: <FileText      size={18} aria-hidden="true" /> },
+    { id: 'observations', label: 'Registro Observación', icon: <Search        size={18} aria-hidden="true" /> },
+    { id: 'findings',     label: 'Hallazgos y Mejoras',  icon: <BarChart      size={18} aria-hidden="true" /> },
+    { id: 'reports',      label: 'Reportes',             icon: <BarChart2     size={18} aria-hidden="true" /> },
   ];
 
   return (
