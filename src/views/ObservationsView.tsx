@@ -13,15 +13,15 @@ interface ObservationsViewProps {
 }
 
 const severityStyles: Record<string, { bg: string; color: string; border: string }> = {
-  Baja:    { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-  Media:   { bg: '#fefce8', color: '#854d0e', border: '#fde68a' },
-  Alta:    { bg: '#fff7ed', color: '#9a3412', border: '#fed7aa' },
+  Baja: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+  Media: { bg: '#fefce8', color: '#854d0e', border: '#fde68a' },
+  Alta: { bg: '#fff7ed', color: '#9a3412', border: '#fed7aa' },
   Crítica: { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
 };
 
 const successStyles: Record<string, { bg: string; color: string; border: string }> = {
-  'Sí':        { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-  'No':        { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
+  'Sí': { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+  'No': { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
   'Con ayuda': { bg: '#fefce8', color: '#854d0e', border: '#fde68a' },
 };
 
@@ -43,10 +43,10 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
     setTimeout(() => setIsSaving(false), 800);
   };
 
-  const totalObs    = data.length;
-  const totalOk     = data.filter((o) => o.success_level === 'Sí').length;
+  const totalObs = data.length;
+  const totalOk = data.filter((o) => o.success_level === 'Sí').length;
   const totalErrors = data.reduce((acc, o) => acc + (o.errors || 0), 0);
-  const avgTime     = totalObs > 0
+  const avgTime = totalObs > 0
     ? Math.round(data.reduce((acc, o) => acc + (o.time_seconds || 0), 0) / totalObs)
     : 0;
 
@@ -126,10 +126,10 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                   }}
                 >
                   {[
-                    { label: 'Observaciones',  value: totalObs,    color: 'var(--primary)', suffix: '' },
-                    { label: 'Tareas exitosas', value: totalOk,     color: '#166534',        suffix: '' },
-                    { label: 'Total errores',   value: totalErrors, color: '#dc2626',        suffix: '' },
-                    { label: 'Tiempo promedio', value: avgTime,     color: '#d97706',        suffix: 's' },
+                    { label: 'Observaciones', value: totalObs, color: 'var(--primary)', suffix: '' },
+                    { label: 'Tareas exitosas', value: totalOk, color: '#166534', suffix: '' },
+                    { label: 'Total errores', value: totalErrors, color: '#dc2626', suffix: '' },
+                    { label: 'Tiempo promedio', value: avgTime, color: '#d97706', suffix: 's' },
                   ].map(({ label, value, color, suffix }) => (
                     <div
                       key={label}
@@ -161,9 +161,9 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
               <div className="data-table-container">
                 <table
                   className="data-table"
-                  aria-labelledby="obs-tabla-heading"
-                  style={{ minWidth: '1300px' }}
+                  style={{ minWidth: '1400px' }}
                 >
+                  <caption className="sr-only">Registro de observaciones de prueba de usabilidad</caption>
                   <thead>
                     <tr>
                       <th scope="col" style={{ width: '90px' }}>Participante</th>
@@ -182,8 +182,8 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                   <tbody>
                     {data.length > 0 ? (
                       data.map((obs) => {
-                        const sStyle  = severityStyles[obs.severity]      || severityStyles['Baja'];
-                        const okStyle = successStyles[obs.success_level]  || successStyles['Sí'];
+                        const sStyle = severityStyles[obs.severity] || severityStyles['Baja'];
+                        const okStyle = successStyles[obs.success_level] || successStyles['Sí'];
                         return (
                           <tr key={obs.id}>
                             {/* Participante */}

@@ -152,7 +152,8 @@ export const ScriptView: React.FC<ScriptViewProps> = ({
                 Tareas a leer durante el test
               </h3>
               <div className="data-table-container">
-                <table className="data-table" aria-labelledby="script-tareas-heading">
+                <table className="data-table">
+                  <caption className="sr-only">Tareas a leer durante el test de usabilidad</caption>
                   <thead>
                     <tr>
                       <th scope="col" style={{ width: '60px' }}>ID</th>
