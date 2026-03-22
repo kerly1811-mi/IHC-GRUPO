@@ -296,9 +296,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════
-          SECCIÓN 2 — Distribución (dona + barras)
-      ══════════════════════════════════════════════ */}
       {m.total > 0 && (
         <section aria-labelledby="dist-title" style={{ marginBottom: '2rem' }}>
           <SectionTitle id="dist-title" icon={<Users size={18} aria-hidden="true" />}>
@@ -378,9 +375,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </section>
       )}
 
-      {/* ══════════════════════════════════════════════
-          SECCIÓN 3 — Éxito por tarea (barras + tabla)
-      ══════════════════════════════════════════════ */}
+
       {m.taskRates.length > 0 && (
         <section aria-labelledby="tasks-title" style={{ marginBottom: '2rem' }}>
           <SectionTitle id="tasks-title" icon={<Target size={18} aria-hidden="true" />}>
@@ -416,7 +411,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 );
               })}
             </div>
-            {/* Leyenda de colores */}
+
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: '1.25rem' }}>
               {[{ color: '#16a34a', label: '≥ 80% — Aceptable' }, { color: '#d97706', label: '50–79% — Mejorar' }, { color: '#dc2626', label: '< 50% — Crítico' }].map(l => (
                 <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: '#475569' }}>
@@ -425,7 +420,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               ))}
             </div>
 
-            {/* Tabla detallada */}
+
             {!isMobile ? (
               <div className="data-table-container">
                 <table className="data-table" style={{ minWidth: 580 }} aria-label="Resultados detallados por tarea">
@@ -434,10 +429,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     <tr>
                       <th scope="col" style={{ width: 70 }}>Tarea</th>
                       <th scope="col">Progreso de éxito</th>
-                      <th scope="col" style={{ width: 90, textAlign: 'center' }}>✅ Exitosas</th>
-                      <th scope="col" style={{ width: 100, textAlign: 'center' }}>🤝 Con ayuda</th>
-                      <th scope="col" style={{ width: 90, textAlign: 'center' }}>❌ Fallidas</th>
-                      <th scope="col" style={{ width: 110, textAlign: 'center' }}>⏱ Tiempo</th>
+                      <th scope="col" style={{ width: 90, textAlign: 'center' }}>Exitosas</th>
+                      <th scope="col" style={{ width: 100, textAlign: 'center' }}>Con ayuda</th>
+                      <th scope="col" style={{ width: 90, textAlign: 'center' }}>Fallidas</th>
+                      <th scope="col" style={{ width: 110, textAlign: 'center' }}>Tiempo</th>
                       <th scope="col" style={{ width: 80, textAlign: 'center' }}>Errores</th>
                     </tr>
                   </thead>
@@ -491,9 +486,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </section>
       )}
 
-      {/* ══════════════════════════════════════════════
-          SECCIÓN 4 — Análisis de hallazgos (dona + barras)
-      ══════════════════════════════════════════════ */}
       {m.totalF > 0 && (
         <section aria-labelledby="findings-charts-title" style={{ marginBottom: '2rem' }}>
           <SectionTitle id="findings-charts-title" icon={<AlertTriangle size={18} aria-hidden="true" />}>
@@ -602,9 +594,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </section>
       )}
 
-      {/* ══════════════════════════════════════════════
-          SECCIÓN 5 — Tabla hallazgos
-      ══════════════════════════════════════════════ */}
       {m.totalF > 0 && (
         <section aria-labelledby="findings-table-title" style={{ marginBottom: '2rem' }}>
           <SectionTitle id="findings-table-title" icon={<ClipboardCheck size={18} aria-hidden="true" />}>
@@ -683,9 +672,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </section>
       )}
 
-      {/* ══════════════════════════════════════════════
-          SECCIÓN 6 — Tabla observaciones
-      ══════════════════════════════════════════════ */}
+
       {observations.length > 0 && (
         <section aria-labelledby="obs-title" style={{ marginBottom: '2rem' }}>
           <SectionTitle id="obs-title" icon={<BarChart2 size={18} aria-hidden="true" />}>
