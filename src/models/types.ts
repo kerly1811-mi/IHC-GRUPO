@@ -1,4 +1,5 @@
-export type DashboardTab = 'plan' | 'script' | 'observations' | 'findings' | 'reports'; // aumente reports
+// src/models/types.ts
+export type DashboardTab = 'plan' | 'script' | 'observations' | 'findings' | 'reports';
 export type Severity = 'Baja' | 'Media' | 'Alta' | 'Crítica';
 export type Priority = 'Baja' | 'Media' | 'Alta';
 export type SuccessStatus = 'Sí' | 'No' | 'Con ayuda';

@@ -4,9 +4,18 @@ import { TestPlan, TestTask, Observation, Finding, DashboardTab } from '../model
 
 export const useUsabilityApp = () => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('plan');
+
+  // ── Vista activa: null = dashboard global, plan = detalle de ese plan ──
+  const [selectedPlan, setSelectedPlan] = useState<TestPlan | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [allPlans, setAllPlans] = useState<TestPlan[]>([]);
-  
+
+  // Datos globales (todos los planes)
+  const [allObservations, setAllObservations] = useState<Observation[]>([]);
+  const [allFindings, setAllFindings] = useState<Finding[]>([]);
+
+  // Datos del plan seleccionado
   const initialPlanState: TestPlan = {
     product: '', module: '', objective: '', moderator: '', observer: '',
     tools: '', link: '', moderator_notes: '',
@@ -22,15 +31,36 @@ export const useUsabilityApp = () => {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
 
+  // ── Cargar datos globales (todos los planes + obs + hallazgos) ──────────
+  const fetchGlobalData = useCallback(async () => {
+    setLoading(true);
+    const [plansRes, obsRes, findRes] = await Promise.all([
+      supabase.from('test_plans').select('*').order('created_at', { ascending: false }),
+      supabase.from('observations').select('*'),
+      supabase.from('findings').select('*'),
+    ]);
+
+    setAllPlans(plansRes.data || []);
+    setAllObservations(obsRes.data || []);
+    setAllFindings(findRes.data || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchGlobalData();
+  }, [fetchGlobalData]);
+
+  // ── Seleccionar un plan y cargar sus datos ─────────────────────────────
   const loadFullPlan = useCallback(async (plan: TestPlan) => {
     setLoading(true);
+    setSelectedPlan(plan);
     setTestPlan(plan);
-    const planId = plan.id;
+    setActiveTab('plan');
 
     const [t, o, f] = await Promise.all([
-      supabase.from('tasks').select('*').eq('test_plan_id', planId).order('task_index', { ascending: true }),
-      supabase.from('observations').select('*').eq('test_plan_id', planId).order('created_at', { ascending: true }),
-      supabase.from('findings').select('*').eq('test_plan_id', planId).order('created_at', { ascending: true })
+      supabase.from('tasks').select('*').eq('test_plan_id', plan.id).order('task_index', { ascending: true }),
+      supabase.from('observations').select('*').eq('test_plan_id', plan.id).order('created_at', { ascending: true }),
+      supabase.from('findings').select('*').eq('test_plan_id', plan.id).order('created_at', { ascending: true }),
     ]);
 
     setTasks(t.data || []);
@@ -39,26 +69,18 @@ export const useUsabilityApp = () => {
     setLoading(false);
   }, []);
 
-  const fetchAllPlans = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('test_plans')
-      .select('*')
-      .order('created_at', { ascending: false });
+  // ── Volver al dashboard global ─────────────────────────────────────────
+  const handleGoHome = () => {
+    setSelectedPlan(null);
+    setTestPlan(initialPlanState);
+    setTasks([]);
+    setObservations([]);
+    setFindings([]);
+  };
 
-    if (!error && data && data.length > 0) {
-      setAllPlans(data);
-      await loadFullPlan(data[0]);
-    } else {
-      setLoading(false);
-    }
-  }, [loadFullPlan]);
-
-  useEffect(() => {
-    fetchAllPlans();
-  }, [fetchAllPlans]);
-
+  // ── Crear nuevo plan ───────────────────────────────────────────────────
   const handleCreateNewPlan = () => {
+    setSelectedPlan({ ...initialPlanState }); // entra al detalle con plan vacío
     setTestPlan(initialPlanState);
     setTasks([]);
     setObservations([]);
@@ -66,36 +88,36 @@ export const useUsabilityApp = () => {
     setActiveTab('plan');
   };
 
+  // ── Eliminar plan ──────────────────────────────────────────────────────
   const handleDeletePlan = async (id: string) => {
-    const { error } = await supabase.from('test_plans').delete().eq('id', id);
-    if (!error) {
-      const remainingPlans = allPlans.filter(p => p.id !== id);
-      setAllPlans(remainingPlans);
-      if (remainingPlans.length > 0) {
-        await loadFullPlan(remainingPlans[0]);
-      } else {
-        handleCreateNewPlan();
-      }
-    }
+    await supabase.from('test_plans').delete().eq('id', id);
+    const remaining = allPlans.filter(p => p.id !== id);
+    setAllPlans(remaining);
+    setAllObservations(prev => prev.filter(o => o.test_plan_id !== id));
+    setAllFindings(prev => prev.filter(f => f.test_plan_id !== id));
+    handleGoHome();
   };
 
+  // ── Guardar plan ───────────────────────────────────────────────────────
   const handleSavePlan = async (fullPlan: TestPlan) => {
     if (!fullPlan.id) {
       const { data, error } = await supabase.from('test_plans').insert([fullPlan]).select().single();
       if (!error && data) {
         setTestPlan(data);
-        const { data: updatedPlans } = await supabase.from('test_plans').select('*').order('created_at', { ascending: false });
-        if (updatedPlans) setAllPlans(updatedPlans);
+        setSelectedPlan(data);
+        setAllPlans(prev => [data, ...prev]);
       }
     } else {
       const { error } = await supabase.from('test_plans').update(fullPlan).eq('id', fullPlan.id);
       if (!error) {
         setTestPlan(fullPlan);
+        setSelectedPlan(fullPlan);
         setAllPlans(prev => prev.map(p => p.id === fullPlan.id ? fullPlan : p));
       }
     }
   };
 
+  // ── Tareas ─────────────────────────────────────────────────────────────
   const handleAddTask = async () => {
     if (!testPlan.id) return;
     const newTask = {
@@ -117,6 +139,7 @@ export const useUsabilityApp = () => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
+  // ── Observaciones ──────────────────────────────────────────────────────
   const handleAddObservation = async () => {
     if (!testPlan.id) return;
     const newObs = {
@@ -125,19 +148,25 @@ export const useUsabilityApp = () => {
       problem: '', severity: 'Baja', proposal: ''
     };
     const { data, error } = await supabase.from('observations').insert([newObs]).select().single();
-    if (!error && data) setObservations(prev => [...prev, data]);
+    if (!error && data) {
+      setObservations(prev => [...prev, data]);
+      setAllObservations(prev => [...prev, data]);
+    }
   };
 
   const handleSaveObservation = async (id: string, updates: Partial<Observation>) => {
     await supabase.from('observations').update(updates).eq('id', id);
     setObservations(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+    setAllObservations(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
   };
 
   const handleDeleteObservation = async (id: string) => {
     await supabase.from('observations').delete().eq('id', id);
     setObservations(prev => prev.filter(o => o.id !== id));
+    setAllObservations(prev => prev.filter(o => o.id !== id));
   };
 
+  // ── Hallazgos ──────────────────────────────────────────────────────────
   const handleAddFinding = async () => {
     if (!testPlan.id) return;
     const newFinding = {
@@ -145,24 +174,37 @@ export const useUsabilityApp = () => {
       severity: 'Baja', recommendation: '', priority: 'Baja', status: 'Pendiente'
     };
     const { data, error } = await supabase.from('findings').insert([newFinding]).select().single();
-    if (!error && data) setFindings(prev => [...prev, data]);
+    if (!error && data) {
+      setFindings(prev => [...prev, data]);
+      setAllFindings(prev => [...prev, data]);
+    }
   };
 
   const handleSaveFinding = async (id: string, updates: Partial<Finding>) => {
     await supabase.from('findings').update(updates).eq('id', id);
     setFindings(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    setAllFindings(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
   };
 
   const handleDeleteFinding = async (id: string) => {
     await supabase.from('findings').delete().eq('id', id);
     setFindings(prev => prev.filter(f => f.id !== id));
+    setAllFindings(prev => prev.filter(f => f.id !== id));
   };
 
   return {
-    activeTab, setActiveTab, loading, allPlans,
+    // navegación
+    activeTab, setActiveTab,
+    selectedPlan,             // null = mostrar dashboard global
+    handleGoHome,
+    // estado de carga
+    loading,
+    // datos globales
+    allPlans, allObservations, allFindings,
+    // datos del plan seleccionado
     testPlan, handleSavePlan, handleCreateNewPlan, loadFullPlan, handleDeletePlan,
     tasks, handleAddTask, handleSaveTask, handleDeleteTask,
     observations, handleAddObservation, handleSaveObservation, handleDeleteObservation,
-    findings, handleAddFinding, handleSaveFinding, handleDeleteFinding
+    findings, handleAddFinding, handleSaveFinding, handleDeleteFinding,
   };
 };
