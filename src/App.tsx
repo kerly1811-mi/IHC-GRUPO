@@ -58,6 +58,7 @@ const App: React.FC = () => {
           allFindings={allFindings}
           onSelectPlan={loadFullPlan}
           onCreatePlan={handleCreateNewPlan}
+          onDeletePlan={handleDeletePlan}
         />
       )}
 

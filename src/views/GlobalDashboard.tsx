@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { TestPlan, Observation, Finding } from '../models/types';
 import {
   ClipboardList, TrendingUp, Clock,
-  AlertTriangle, Shield, Plus, ArrowRight, 
-  BarChart2, Users, Zap, Search
+  AlertTriangle, Shield, Plus, ArrowRight,
+  BarChart2, Users, Zap, Search, Trash2
 } from 'lucide-react';
 import './GlobalDashboard.css';
 
@@ -13,6 +13,7 @@ interface GlobalDashboardProps {
   allFindings: Finding[];
   onSelectPlan: (plan: TestPlan) => void;
   onCreatePlan: () => void;
+  onDeletePlan: (planId: string) => void;
 }
 
 const pct = (n: number, t: number) => (t === 0 ? 0 : Math.round((n / t) * 100));
@@ -26,10 +27,12 @@ const SEV_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
-  allPlans, allObservations, allFindings, onSelectPlan, onCreatePlan,
+  allPlans, allObservations, allFindings,
+  onSelectPlan, onCreatePlan, onDeletePlan,
 }) => {
   const [search, setSearch] = React.useState('');
   const [page, setPage] = React.useState(1);
+  const [planToDelete, setPlanToDelete] = React.useState<TestPlan | null>(null);
   const PAGE_SIZE = 10;
 
   const global = useMemo(() => {
@@ -63,7 +66,6 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
     };
   }, [allObservations, allFindings]);
 
-  // métricas por plan para las tarjetas
   const planMetrics = useMemo(() => {
     return allPlans.map(plan => {
       const obs = allObservations.filter(o => o.test_plan_id === plan.id);
@@ -101,7 +103,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
 
   const handleSearch = (val: string) => {
     setSearch(val);
-    setPage(1); // reset al buscar
+    setPage(1);
   };
 
   const kpis = [
@@ -171,7 +173,6 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             <span className="gd-count-badge">{allPlans.length} plan{allPlans.length !== 1 ? 'es' : ''}</span>
           </div>
           <div className="gd-plans-controls">
-            {/* Buscador */}
             <div className="gd-search-wrap">
               <Search size={16} aria-hidden="true" className="gd-search-icon" />
               <input
@@ -211,11 +212,14 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
               <span>Críticos</span>
               <span>Estado</span>
               <span></span>
+              <span></span>
             </div>
 
             <ul className="gd-plan-list">
               {paginated.map(({ plan, obs, fin, ok, rate, criticalF, score, scoreColor, scoreBg }) => (
-                <li key={plan.id}>
+                <li key={plan.id} className="gd-plan-item">
+
+                  {/* Fila principal — navega al plan */}
                   <button
                     className="gd-plan-row"
                     onClick={() => onSelectPlan(plan)}
@@ -271,7 +275,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                       <span className="gd-cell-sub">críticos</span>
                     </div>
 
-                    {/* Estado de usabilidad */}
+                    {/* Estado */}
                     <div className="gd-plan-cell">
                       <span
                         className="gd-status-badge"
@@ -281,21 +285,32 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                       </span>
                     </div>
 
-                    {/* Acción */}
+                    {/* Flecha */}
                     <div className="gd-plan-arrow">
                       <ArrowRight size={18} aria-hidden="true" />
                     </div>
                   </button>
+
+                  {/* Botón eliminar — fuera del <button> principal (no se pueden anidar buttons) */}
+                  <button
+                    className="gd-btn-delete-plan"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPlanToDelete(plan);
+                    }}
+                    aria-label={`Eliminar plan ${plan.product || 'Sin nombre'}`}
+                    title="Eliminar plan"
+                  >
+                    <Trash2 size={15} aria-hidden="true" />
+                  </button>
+
                 </li>
               ))}
             </ul>
 
             {/* ── Paginación ── */}
             {totalPages > 1 && (
-              <nav
-                className="gd-pagination"
-                aria-label="Paginación de planes"
-              >
+              <nav className="gd-pagination" aria-label="Paginación de planes">
                 <span className="gd-page-info" aria-live="polite">
                   {((currentPage - 1) * PAGE_SIZE) + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} de {filtered.length} planes
                 </span>
@@ -315,7 +330,6 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                     title="Anterior"
                   >‹</button>
 
-                  {/* Números de página */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(n =>
                       n === 1 ||
@@ -383,6 +397,48 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             })}
           </div>
         </section>
+      )}
+
+      {/* ══ MODAL CONFIRMACIÓN ELIMINAR ══ */}
+      {planToDelete && (
+        <div
+          className="gd-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="gd-modal-title"
+          onClick={() => setPlanToDelete(null)}
+        >
+          <div className="gd-modal" onClick={e => e.stopPropagation()}>
+            <div className="gd-modal-icon" aria-hidden="true">
+              <Trash2 size={24} />
+            </div>
+            <h3 id="gd-modal-title" className="gd-modal-title">¿Eliminar este plan?</h3>
+            <p className="gd-modal-body">
+              Se eliminará permanentemente{' '}
+              <strong>{planToDelete.product || 'Sin nombre'}</strong>
+              {planToDelete.module ? ` — ${planToDelete.module}` : ''} junto
+              con todas sus tareas, observaciones y hallazgos asociados.{' '}
+              <strong>Esta acción no se puede deshacer.</strong>
+            </p>
+            <div className="gd-modal-footer">
+              <button
+                className="gd-modal-btn-cancel"
+                onClick={() => setPlanToDelete(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="gd-modal-btn-delete"
+                onClick={() => {
+                  if (planToDelete.id) onDeletePlan(planToDelete.id);
+                  setPlanToDelete(null);
+                }}
+              >
+                <Trash2 size={14} aria-hidden="true" /> Eliminar plan
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
