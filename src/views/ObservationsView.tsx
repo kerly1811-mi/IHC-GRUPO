@@ -140,9 +140,9 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                       <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {label}
                       </p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '2rem', fontWeight: 800, color }}>
+                      <h4 style={{ margin: '0.25rem 0 0', fontSize: '2rem', fontWeight: 800, color }}>
                         {value}{suffix}
-                      </p>
+                      </h4>
                     </div>
                   ))}
                 </div>
