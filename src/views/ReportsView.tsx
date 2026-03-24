@@ -24,16 +24,16 @@ const fmtTime = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : 
 
 /* ─── Colores semánticos WCAG AA (contraste >= 4.5:1 sobre blanco) ──────── */
 const SEV_MAP: Record<string, { bg: string; text: string; border: string; solid: string }> = {
-  Baja:    { bg: '#dcfce7', text: '#14532d', border: '#16a34a', solid: '#16a34a' },
-  Media:   { bg: '#fef3c7', text: '#92400e', border: '#d97706', solid: '#d97706' },
-  Alta:    { bg: '#ffedd5', text: '#7c2d12', border: '#ea580c', solid: '#ea580c' },
-  'Crítica': { bg: '#fee2e2', text: '#7f1d1d', border: '#dc2626', solid: '#dc2626' },
+  Baja:    { bg: '#dcfce7', text: '#14532d', border: '#16a34a', solid: '#15803d' },
+  Media:   { bg: '#fef3c7', text: '#92400e', border: '#d97706', solid: '#b45309' },
+  Alta:    { bg: '#ffedd5', text: '#7c2d12', border: '#ea580c', solid: '#c2410c' },
+  'Crítica': { bg: '#fee2e2', text: '#7f1d1d', border: '#dc2626', solid: '#b91c1c' },
 };
 
 const PRI_MAP: Record<string, { bg: string; text: string; solid: string }> = {
-  Baja:  { bg: '#eff6ff', text: '#1e3a8a', solid: '#2563eb' },
-  Media: { bg: '#fef3c7', text: '#92400e', solid: '#d97706' },
-  Alta:  { bg: '#fdf4ff', text: '#6b21a8', solid: '#9333ea' },
+  Baja:  { bg: '#eff6ff', text: '#1e3a8a', solid: '#1d4ed8' },
+  Media: { bg: '#fef3c7', text: '#92400e', solid: '#b45309' },
+  Alta:  { bg: '#fdf4ff', text: '#6b21a8', solid: '#7e22ce' },
 };
 
 const STATUS_MAP: Record<string, { bg: string; text: string; icon: string; border: string }> = {
@@ -166,11 +166,11 @@ const Panel: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }
 /* ─── Badges ─────────────────────────────────────────────────────────────── */
 const SevBadge: React.FC<{ sev: Severity }> = ({ sev }) => {
   const c = SEV_MAP[sev] ?? SEV_MAP['Baja'];
-  return <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}`, fontWeight: 700, fontSize: '0.73rem', whiteSpace: 'nowrap' }}>{sev}</span>;
+  return <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}`, fontWeight: 700, fontSize: '0.73rem', whiteSpace: 'nowrap' }}>S: {sev}</span>;
 };
 const PriBadge: React.FC<{ pri: Priority }> = ({ pri }) => {
   const c = PRI_MAP[pri] ?? PRI_MAP['Baja'];
-  return <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, backgroundColor: c.bg, color: c.text, border: `1px solid ${c.solid}66`, fontWeight: 700, fontSize: '0.73rem', whiteSpace: 'nowrap' }}>{pri}</span>;
+  return <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, backgroundColor: c.bg, color: c.text, border: `1px solid ${c.solid}66`, fontWeight: 700, fontSize: '0.73rem', whiteSpace: 'nowrap' }}>P: {pri}</span>;
 };
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const c = STATUS_MAP[status] ?? STATUS_MAP['Pendiente'];
@@ -639,11 +639,9 @@ ${sec('📋','Conclusiones y Recomendaciones','Síntesis ejecutiva de los hallaz
             {/* Score principal */}
             <div className="report-panel" style={{ backgroundColor: usabilityBg, border: `2px solid ${usabilityBorder}`, borderRadius: 12, padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#475569' }}>Nivel de usabilidad</p>
-              <p style={{ margin: 0 }}>
-                <span aria-label={`Tasa de éxito global: ${m.successRate} por ciento`} style={{ fontSize: '3.5rem', fontWeight: 900, color: usabilityColor, lineHeight: 1, letterSpacing: '-2px', display: 'block' }}>
-                  {m.successRate}%
-                </span>
-              </p>
+              <h4 aria-label={`Tasa de éxito global: ${m.successRate} por ciento`} style={{ margin: 0, fontSize: '3.5rem', fontWeight: 900, color: usabilityColor, lineHeight: 1, letterSpacing: '-2px', display: 'block' }}>
+                {m.successRate}%
+              </h4>
               <span style={{ fontSize: '1rem', fontWeight: 700, color: usabilityColor, backgroundColor: '#fff', padding: '6px 20px', borderRadius: 99, border: `2px solid ${usabilityBorder}` }}>
                 {m.usabilityScore}
               </span>
