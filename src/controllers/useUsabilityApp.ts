@@ -3,7 +3,15 @@ import { supabase } from '../lib/supabaseClient';
 import { TestPlan, TestTask, Observation, Finding, DashboardTab } from '../models/types';
 
 export const useUsabilityApp = () => {
-  const [activeTab, setActiveTab] = useState<DashboardTab>('plan');
+  const [activeTab, setActiveTabState] = useState<DashboardTab>(() => {
+    const saved = localStorage.getItem('activeTab');
+    return (saved as DashboardTab) || 'plan';
+  });
+
+  const setActiveTab = (tab: DashboardTab) => {
+    setActiveTabState(tab);
+    localStorage.setItem('activeTab', tab);
+  };
 
   // ── Vista activa: null = dashboard global, plan = detalle de ese plan ──
   const [selectedPlan, setSelectedPlan] = useState<TestPlan | null>(null);
@@ -51,11 +59,12 @@ export const useUsabilityApp = () => {
   }, [fetchGlobalData]);
 
   // ── Seleccionar un plan y cargar sus datos ─────────────────────────────
-  const loadFullPlan = useCallback(async (plan: TestPlan) => {
+  const loadFullPlan = useCallback(async (plan: TestPlan, keepTab = false) => {
     setLoading(true);
     setSelectedPlan(plan);
     setTestPlan(plan);
-    setActiveTab('plan');
+    if (plan.id) localStorage.setItem('selectedPlanId', plan.id);
+    if (!keepTab) setActiveTab('plan');
 
     const [t, o, f] = await Promise.all([
       supabase.from('tasks').select('*').eq('test_plan_id', plan.id).order('task_index', { ascending: true }),
@@ -69,6 +78,19 @@ export const useUsabilityApp = () => {
     setLoading(false);
   }, []);
 
+  // ── Restaurar sesión al cargar ─────────────────────────────────────────
+  useEffect(() => {
+    if (!loading && allPlans.length > 0 && !selectedPlan) {
+      const savedPlanId = localStorage.getItem('selectedPlanId');
+      if (savedPlanId) {
+        const plan = allPlans.find(p => p.id === savedPlanId);
+        if (plan) {
+          loadFullPlan(plan, true);
+        }
+      }
+    }
+  }, [loading, allPlans, selectedPlan, loadFullPlan]);
+
   // ── Volver al dashboard global ─────────────────────────────────────────
   const handleGoHome = () => {
     setSelectedPlan(null);
@@ -76,6 +98,8 @@ export const useUsabilityApp = () => {
     setTasks([]);
     setObservations([]);
     setFindings([]);
+    localStorage.removeItem('selectedPlanId');
+    localStorage.removeItem('activeTab');
   };
 
   // ── Crear nuevo plan ───────────────────────────────────────────────────
@@ -106,6 +130,7 @@ export const useUsabilityApp = () => {
         setTestPlan(data);
         setSelectedPlan(data);
         setAllPlans(prev => [data, ...prev]);
+        if (data.id) localStorage.setItem('selectedPlanId', data.id);
       }
     } else {
       const { error } = await supabase.from('test_plans').update(fullPlan).eq('id', fullPlan.id);
