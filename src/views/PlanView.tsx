@@ -95,6 +95,65 @@ export const PlanView: React.FC<PlanViewProps> = ({ data, tasks, onUpdate, onAdd
                 rows={2} 
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="user-profile">Perfil de usuarios:</label>
+              <input 
+                id="user-profile"
+                type="text" 
+                value={localPlan.user_profile} 
+                placeholder="Ej: Usuarios de 25-40 años, con experiencia en compras online."
+                onChange={(e) => handleChange({ user_profile: e.target.value })} 
+                onBlur={(e) => handleAutoSave({ user_profile: e.target.value })}
+              />
+            </div>
+            <div className="row-2">
+              <div className="form-group">
+                <label htmlFor="test-method">Método:</label>
+                <input 
+                  id="test-method"
+                  type="text" 
+                  value={localPlan.method} 
+                  placeholder="Ej: Moderado, remoto, presencial..."
+                  onChange={(e) => handleChange({ method: e.target.value })} 
+                  onBlur={(e) => handleAutoSave({ method: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="test-duration">Duración:</label>
+                <input 
+                  id="test-duration"
+                  type="text" 
+                  value={localPlan.duration} 
+                  placeholder="Ej: 45 min por sesión."
+                  onChange={(e) => handleChange({ duration: e.target.value })} 
+                  onBlur={(e) => handleAutoSave({ duration: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="row-2">
+              <div className="form-group">
+                <label htmlFor="test-date">Fecha:</label>
+                <input 
+                  id="test-date"
+                  type="text" 
+                  value={localPlan.test_date} 
+                  placeholder="Ej: 15 de Mayo, 2024"
+                  onChange={(e) => handleChange({ test_date: e.target.value })} 
+                  onBlur={(e) => handleAutoSave({ test_date: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="location-channel">Lugar / canal:</label>
+                <input 
+                  id="location-channel"
+                  type="text" 
+                  value={localPlan.location_channel} 
+                  placeholder="Ej: Google Meet, Oficina 302..."
+                  onChange={(e) => handleChange({ location_channel: e.target.value })} 
+                  onBlur={(e) => handleAutoSave({ location_channel: e.target.value })}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

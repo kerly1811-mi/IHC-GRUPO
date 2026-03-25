@@ -286,6 +286,13 @@ h1,h2,h3,h4,p{margin:0}
   <p style="margin:0 0 2px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.72);text-transform:uppercase;letter-spacing:1.5px">Informe de Prueba de Usabilidad</p>
   <h1 style="margin:2px 0 0;font-size:24px;font-weight:900;color:#fff">${testPlan.product}</h1>
   ${testPlan.module ? `<p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.82)">Módulo: ${testPlan.module}</p>` : ''}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.9)">
+    ${testPlan.user_profile ? `<div><strong>Perfil:</strong> ${testPlan.user_profile}</div>` : ''}
+    ${testPlan.method ? `<div><strong>Método:</strong> ${testPlan.method}</div>` : ''}
+    ${testPlan.duration ? `<div><strong>Duración:</strong> ${testPlan.duration}</div>` : ''}
+    ${testPlan.test_date ? `<div><strong>Fecha:</strong> ${testPlan.test_date}</div>` : ''}
+    ${testPlan.location_channel ? `<div><strong>Lugar:</strong> ${testPlan.location_channel}</div>` : ''}
+  </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px">
     ${[
       { label: 'Participantes',    value: m.participants.length > 0 ? String(m.participants.length) : '0' },
@@ -601,6 +608,13 @@ ${sec('📋','Conclusiones y Recomendaciones','Síntesis ejecutiva de los hallaz
                   Módulo: {testPlan.module}
                 </p>
               )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '6px 16px', marginTop: '12px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)' }}>
+                {testPlan.user_profile && <span><strong>Perfil:</strong> {testPlan.user_profile}</span>}
+                {testPlan.method && <span><strong>Método:</strong> {testPlan.method}</span>}
+                {testPlan.duration && <span><strong>Duración:</strong> {testPlan.duration}</span>}
+                {testPlan.test_date && <span><strong>Fecha:</strong> {testPlan.test_date}</span>}
+                {testPlan.location_channel && <span><strong>Lugar:</strong> {testPlan.location_channel}</span>}
+              </div>
             </div>
           </div>
 

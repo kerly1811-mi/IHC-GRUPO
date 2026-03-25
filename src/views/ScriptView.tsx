@@ -107,6 +107,43 @@ export const ScriptView: React.FC<ScriptViewProps> = ({
           </section>
         ) : (
           <>
+            {/* ── 0. Contexto de la sesión ── */}
+            {(testPlan.method || testPlan.duration || testPlan.location_channel) && (
+              <section className="card" aria-labelledby="script-contexto-heading">
+                <h3 className="card-title" id="script-contexto-heading">
+                  Contexto de la sesión
+                </h3>
+                <div className="card-content">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {testPlan.method && (
+                      <div className="form-group">
+                        <label>Método:</label>
+                        <div style={{ padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--border)', fontWeight: 500 }}>
+                          {testPlan.method}
+                        </div>
+                      </div>
+                    )}
+                    {testPlan.duration && (
+                      <div className="form-group">
+                        <label>Duración estimada:</label>
+                        <div style={{ padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--border)', fontWeight: 500 }}>
+                          {testPlan.duration}
+                        </div>
+                      </div>
+                    )}
+                    {testPlan.location_channel && (
+                      <div className="form-group">
+                        <label>Lugar / Canal:</label>
+                        <div style={{ padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--border)', fontWeight: 500 }}>
+                          {testPlan.location_channel}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* ── 1. Inicio de la sesión ── */}
             <section className="card" aria-labelledby="script-inicio-heading">
               <h3 className="card-title" id="script-inicio-heading">

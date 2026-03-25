@@ -28,6 +28,11 @@ export interface TestPlan {
   product: string;
   module: string;
   objective: string;
+  user_profile: string;
+  method: string;
+  duration: string;
+  test_date: string;
+  location_channel: string;
   moderator: string;
   observer: string;
   tools: string;

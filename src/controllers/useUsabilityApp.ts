@@ -25,7 +25,9 @@ export const useUsabilityApp = () => {
 
   // Datos del plan seleccionado
   const initialPlanState: TestPlan = {
-    product: '', module: '', objective: '', moderator: '', observer: '',
+    product: '', module: '', objective: '', 
+    user_profile: '', method: '', duration: '', test_date: '', location_channel: '',
+    moderator: '', observer: '',
     tools: '', link: '', moderator_notes: '',
     closing_questions: [
       { question: "¿Qué fue lo más fácil?", answer: "" },
