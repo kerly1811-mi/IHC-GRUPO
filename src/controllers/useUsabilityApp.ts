@@ -61,43 +61,53 @@ export const useUsabilityApp = () => {
     setHasUnsavedChanges(true);
   };
 
-  // ── Inicialización Unificada ──────────────────────────────────────────
+  // ── Inicialización Unificada (Optimización de Carga) ───────────────────
   useEffect(() => {
     const initialize = async () => {
       setLoading(true);
       try {
-        // 1. Cargar datos globales básicos
-        const [plansRes, obsRes, findRes] = await Promise.all([
-          supabase.from('test_plans').select('*').order('created_at', { ascending: false }),
-          supabase.from('observations').select('*'),
-          supabase.from('findings').select('*'),
-        ]);
-
-        const plans = plansRes.data || [];
-        setAllPlans(plans);
-        setAllObservations(obsRes.data || []);
-        setAllFindings(findRes.data || []);
-
-        // 2. Restaurar plan si existe en localStorage
         const savedPlanId = localStorage.getItem('selectedPlanId');
+        
+        // Peticiones paralelas de datos iniciales
+        const fetchPromises: any[] = [
+          supabase.from('test_plans').select('*').order('created_at', { ascending: false }),
+        ];
+
+        // Si hay un plan guardado, lo cargamos todo en paralelo con el listado inicial
         if (savedPlanId) {
+          fetchPromises.push(supabase.from('tasks').select('*').eq('test_plan_id', savedPlanId).order('task_index', { ascending: true }));
+          fetchPromises.push(supabase.from('observations').select('*').eq('test_plan_id', savedPlanId).order('created_at', { ascending: true }));
+          fetchPromises.push(supabase.from('findings').select('*').eq('test_plan_id', savedPlanId).order('created_at', { ascending: true }));
+        }
+
+        const results = await Promise.all(fetchPromises);
+        
+        const plans: TestPlan[] = (results[0].data as TestPlan[]) || [];
+        setAllPlans(plans);
+
+        if (savedPlanId && results.length > 1) {
           const plan = plans.find(p => p.id === savedPlanId);
           if (plan) {
             setSelectedPlan(plan);
             setTestPlanState(plan);
-
-            // Cargar detalles del plan específico
-            const [t, o, f] = await Promise.all([
-              supabase.from('tasks').select('*').eq('test_plan_id', plan.id).order('task_index', { ascending: true }),
-              supabase.from('observations').select('*').eq('test_plan_id', plan.id).order('created_at', { ascending: true }),
-              supabase.from('findings').select('*').eq('test_plan_id', plan.id).order('created_at', { ascending: true }),
-            ]);
-
-            setTasksState(t.data || []);
-            setObservationsState(o.data || []);
-            setFindingsState(f.data || []);
+            setTasksState(results[1].data || []);
+            setObservationsState(results[2].data || []);
+            setFindingsState(results[3].data || []);
           }
         }
+
+        // Cargar datos globales para el dashboard en segundo plano para no bloquear el inicio
+        // Esto permite que el dashboard aparezca rápido aunque los gráficos tarden un pelín más
+        const [obsRes, findRes] = await Promise.all([
+          supabase.from('observations').select('*'),
+          supabase.from('findings').select('*'),
+        ]);
+
+        setAllObservations(obsRes.data || []);
+        setAllFindings(findRes.data || []);
+        
+        // Asegurar que no hay cambios marcados al iniciar
+        setHasUnsavedChanges(false);
       } catch (error) {
         console.error("Error durante la inicialización:", error);
       } finally {
@@ -106,7 +116,7 @@ export const useUsabilityApp = () => {
     };
 
     initialize();
-  }, []); // Solo se corre al montar el componente principal
+  }, []);
 
   // ── Seleccionar un plan y cargar sus datos (para navegación manual) ────
   const loadFullPlan = useCallback(async (plan: TestPlan, keepTab = false) => {
@@ -126,6 +136,9 @@ export const useUsabilityApp = () => {
       setTasksState(t.data || []);
       setObservationsState(o.data || []);
       setFindingsState(f.data || []);
+      
+      // Limpiar flag al cargar plan
+      setHasUnsavedChanges(false);
     } finally {
       setLoading(false);
     }
@@ -140,6 +153,9 @@ export const useUsabilityApp = () => {
     setFindings([]);
     localStorage.removeItem('selectedPlanId');
     localStorage.removeItem('activeTab');
+    
+    // Limpiar flag al volver al home
+    setHasUnsavedChanges(false);
   };
 
   // ── Crear nuevo plan ───────────────────────────────────────────────────
@@ -150,6 +166,9 @@ export const useUsabilityApp = () => {
     setObservations([]);
     setFindings([]);
     setActiveTab('plan');
+    
+    // Limpiar flag para nuevo plan
+    setHasUnsavedChanges(false);
   };
 
   // ── Eliminar plan ──────────────────────────────────────────────────────

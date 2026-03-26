@@ -16,7 +16,6 @@
 #root {
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -29,8 +28,6 @@ body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   color: var(--text-main);
-  overflow-y: scroll;
-  overflow-x: hidden;
 }
 
 .container {
@@ -42,14 +39,14 @@ body {
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
   box-sizing: border-box;
   padding: 0 2rem 4rem 2rem;
-  overflow-x: hidden;
+  /* Quitamos overflow-x para que funcione el sticky */
 }
 
 .main-header {
   background-color: var(--primary);
   color: var(--white);
   padding: 2.5rem 1rem;
-  margin: 0 -2rem 2rem -2rem;
+  margin: 0 -2rem 0 -2rem; /* Eliminamos el margin-bottom para que pegue con la nav */
   text-align: center;
 }
 
@@ -74,15 +71,15 @@ body {
   box-sizing: border-box;
 }
 
+/* Limpieza de la clase vieja de pestañas */
 .tabs-container {
   display: flex;
   gap: 4px;
-  border-bottom: 3px solid var(--primary);
-  margin-bottom: 2rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
   flex-wrap: nowrap;
+  scrollbar-width: none;
 }
 
 .tab-button {
@@ -107,6 +104,122 @@ body {
 .tab-button[aria-selected="true"] {
   background: var(--primary);
   color: var(--white);
+}
+
+/* --- Sticky Navigation Wrapper --- */
+.tabs-nav-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--primary);
+  margin-bottom: 2rem;
+  padding: 0.5rem 0;
+  gap: 1rem;
+  /* Sombra suave cuando flota */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  scrollbar-width: none; /* Ocultar scrollbar en Firefox */
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none; /* Ocultar scrollbar en Chrome/Safari */
+}
+
+.tab-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Sticky Save Button --- */
+.btn-save-sticky {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  font-family: inherit;
+}
+
+.btn-save-sticky:hover:not(:disabled) {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.btn-save-sticky.unsaved {
+  background-color: #003366;
+  color: white;
+  border-color: #003366;
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+}
+
+.btn-save-sticky.unsaved:hover {
+  background-color: #004080;
+  box-shadow: 0 6px 16px rgba(0, 51, 102, 0.3);
+}
+
+.btn-save-sticky.success {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.btn-save-sticky.saving {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+  cursor: default;
+}
+
+.unsaved-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background-color: #ef4444;
+  border: 2px solid white;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@media (max-width: 768px) {
+  .save-text {
+    display: none; /* Solo icono en mviles para ahorrar espacio */
+  }
+  .btn-save-sticky {
+    padding: 10px;
+  }
+  .tabs-nav-wrapper {
+    padding: 0.5rem 0.25rem;
+  }
 }
 
 .view-header {
@@ -557,7 +670,7 @@ select:focus-visible {
   font-size: 0.75rem;
   line-height: 1.4;
   width: 240px; /* Un poco ms ancho */
-  max-width: 80vw; /* No pasarse de la pantalla en mvil */
+  max-width: 80vw;
   z-index: 10000; 
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   text-align: center;
@@ -570,13 +683,22 @@ select:focus-visible {
   overflow-wrap: break-word;
 }
 
-.tooltip-arrow {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -6px;
-  border-width: 6px;
-  border-style: solid;
-  border-color: #1e293b transparent transparent transparent;
+/* ══════════════════════════════════════════════
+   ANIMACIONES DE TRANSICIÓN
+   ══════════════════════════════════════════════ */
+
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-transition {
+  animation: fadeInSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 

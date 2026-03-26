@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import './App.css';
 import { useUsabilityApp } from './controllers/useUsabilityApp';
 import { TabNavigation } from './components/TabNavigation';
-import { GlobalDashboard } from './views/GlobalDashboard';
-import { PlanView } from './views/PlanView';
-import { ScriptView } from './views/ScriptView';
-import { ObservationsView } from './views/ObservationsView';
-import { FindingsView } from './views/FindingsView';
-import { ReportsView } from './views/ReportsView';
-import { Trash2, AlertTriangle, ArrowLeft, Save, Check } from 'lucide-react';
+import { Trash2, AlertTriangle, ArrowLeft, Save } from 'lucide-react';
+
+// Lazy loading de vistas para mejorar el Performance inicial
+const GlobalDashboard = lazy(() => import('./views/GlobalDashboard').then(module => ({ default: module.GlobalDashboard })));
+const PlanView = lazy(() => import('./views/PlanView').then(module => ({ default: module.PlanView })));
+const ScriptView = lazy(() => import('./views/ScriptView').then(module => ({ default: module.ScriptView })));
+const ObservationsView = lazy(() => import('./views/ObservationsView').then(module => ({ default: module.ObservationsView })));
+const FindingsView = lazy(() => import('./views/FindingsView').then(module => ({ default: module.FindingsView })));
+const ReportsView = lazy(() => import('./views/ReportsView').then(module => ({ default: module.ReportsView })));
+
+// Spinner pequeño para la carga de componentes lazy
+const LazyLoader = () => (
+  <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', fontStyle: 'italic' }}>
+    Cargando sección...
+  </div>
+);
 
 const App: React.FC = () => {
   const {
@@ -82,20 +91,24 @@ const App: React.FC = () => {
 
       {/* ══ VISTA: DASHBOARD GLOBAL ════════════════════════════════════════ */}
       {!selectedPlan && (
-        <GlobalDashboard
-          allPlans={allPlans}
-          allObservations={allObservations}
-          allFindings={allFindings}
-          onSelectPlan={loadFullPlan}
-          onCreatePlan={handleCreateNewPlan}
-          onDeletePlan={handleDeletePlan}
-        />
+        <div className="view-transition">
+          <Suspense fallback={<LazyLoader />}>
+            <GlobalDashboard
+              allPlans={allPlans}
+              allObservations={allObservations}
+              allFindings={allFindings}
+              onSelectPlan={loadFullPlan}
+              onCreatePlan={handleCreateNewPlan}
+              onDeletePlan={handleDeletePlan}
+            />
+          </Suspense>
+        </div>
       )}
 
       {/* ══ VISTA: DETALLE DE PLAN ═════════════════════════════════════════ */}
       {selectedPlan !== null && (
-        <>
-          {/* Barra de contexto del plan */}
+        <div className="view-transition">
+          {/* ... barra de contexto ... */}
           <div
             role="region"
             aria-label="Plan activo"
@@ -106,45 +119,55 @@ const App: React.FC = () => {
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '1rem',
-              padding: '1.25rem',
+              padding: '1rem 1.25rem',
               backgroundColor: '#f8fafc',
               borderRadius: '12px',
               marginBottom: '1.5rem',
               border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
             }}
           >
             {/* Botón volver y nombre del plan */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: '1 1 300px', minWidth: 0, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 300px', minWidth: 0 }}>
               <button
-                onClick={handleTryGoHome}
+                onMouseDown={(e) => {
+                  e.preventDefault(); // Evita que el foco se pierda inmediatamente
+                  handleTryGoHome();
+                }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  background: '#e8eef7', color: '#003366',
-                  border: '1px solid #c7d7f0', borderRadius: '8px',
-                  padding: '8px 16px', fontWeight: 700, cursor: 'pointer',
-                  fontSize: '.85rem', fontFamily: 'inherit', flexShrink: 0,
-                  transition: 'background .2s',
+                  background: 'transparent', color: '#64748b',
+                  border: '1px solid #e2e8f0', borderRadius: '8px',
+                  padding: '6px 12px', fontWeight: 600, cursor: 'pointer',
+                  fontSize: '.8rem', fontFamily: 'inherit', flexShrink: 0,
+                  transition: 'all .2s',
                 }}
                 aria-label="Volver al dashboard principal"
-                onMouseEnter={e => (e.currentTarget.style.background = '#d1e2f7')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#e8eef7')}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#f1f5f9';
+                  e.currentTarget.style.color = '#003366';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#64748b';
+                }}
               >
-                <ArrowLeft size={16} aria-hidden="true" />
-                Todos los planes
+                <ArrowLeft size={14} aria-hidden="true" />
+                Volver
               </button>
 
               {/* Nombre del plan activo */}
               <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                 <div style={{
-                  fontWeight: 700, color: '#0f172a', fontSize: '1rem',
+                  fontWeight: 800, color: '#1e293b', fontSize: '1.1rem',
                   wordWrap: 'break-word', overflowWrap: 'break-word',
+                  letterSpacing: '-0.02em'
                 }}>
-                  {testPlan.product || 'Plan nuevo'}
+                  {testPlan.product || 'Sin nombre de producto'}
                 </div>
                 {testPlan.module && (
-                  <div style={{ fontSize: '.85rem', color: '#475569', marginTop: 2, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                    {testPlan.module}
+                  <div style={{ fontSize: '.8rem', color: '#64748b', marginTop: 1, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                    Módulo: {testPlan.module}
                   </div>
                 )}
               </div>
@@ -154,137 +177,110 @@ const App: React.FC = () => {
                 <button
                   onClick={() => setShowDeleteModal(true)}
                   style={{
-                    background: '#fee2e2', border: '1px solid #fecaca',
-                    color: '#dc2626', cursor: 'pointer', padding: '8px',
-                    display: 'flex', alignItems: 'center', borderRadius: '8px',
-                    flexShrink: 0, transition: 'background .2s',
+                    background: 'transparent', border: '1px solid transparent',
+                    color: '#94a3b8', cursor: 'pointer', padding: '6px',
+                    display: 'flex', alignItems: 'center', borderRadius: '6px',
+                    flexShrink: 0, transition: 'all .2s',
                   }}
                   title="Eliminar este plan"
                   aria-label="Eliminar plan actual"
-                  onMouseEnter={e => (e.currentTarget.style.background = '#fecaca')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#fee2e2')}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = '#dc2626';
+                    e.currentTarget.style.background = '#fee2e2';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.background = 'transparent';
+                  }}
                 >
                   <Trash2 size={18} aria-hidden="true" />
                 </button>
               )}
-
-              {/* Botón de Guardar Manual */}
-              <button
-                onClick={onManualSave}
-                disabled={saveStatus !== 'idle'}
-                style={{
-                  background: saveStatus === 'success' ? '#dcfce7' : '#f1f5f9',
-                  border: `1px solid ${saveStatus === 'success' ? '#86efac' : '#e2e8f0'}`,
-                  color: saveStatus === 'success' ? '#15803d' : '#0f172a',
-                  cursor: saveStatus === 'idle' ? 'pointer' : 'default',
-                  padding: '8px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '.85rem',
-                  fontFamily: 'inherit',
-                  transition: 'all .3s ease',
-                  flexShrink: 0,
-                }}
-                title="Guardar cambios manualmente"
-                onMouseEnter={e => {
-                  if (saveStatus === 'idle') e.currentTarget.style.background = '#e2e8f0';
-                }}
-                onMouseLeave={e => {
-                  if (saveStatus === 'idle') e.currentTarget.style.background = '#f1f5f9';
-                }}
-              >
-                {saveStatus === 'success' ? (
-                  <>
-                    <Check size={18} aria-hidden="true" />
-                    ¡Guardado!
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} aria-hidden="true" />
-                    {saveStatus === 'saving' ? 'Guardando...' : 'Guardar'}
-                  </>
-                )}
-              </button>
             </div>
           </div>
 
           {/* Pestañas de sección */}
           <main id="main-content" style={{ minHeight: '50vh' }}>
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <TabNavigation 
+              activeTab={activeTab} 
+              onTabChange={setActiveTab} 
+              onSave={onManualSave}
+              saveStatus={saveStatus}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
 
-            {activeTab === 'plan' && (
-              <div id="plan-panel" role="tabpanel" aria-labelledby="plan-tab">
-                <PlanView
-                  data={testPlan}
-                  tasks={tasks}
-                  onUpdate={handleSavePlan}
-                  onSyncPlan={setTestPlan}
-                  onSyncTasks={setTasks}
-                  onAddTask={handleAddTask}
-                  onSaveTask={handleSaveTask}
-                  onDeleteTask={handleDeleteTask}
-                />
-              </div>
-            )}
+            <Suspense fallback={<LazyLoader />}>
+              {activeTab === 'plan' && (
+                <div id="plan-panel" role="tabpanel" aria-labelledby="plan-tab">
+                  <PlanView
+                    data={testPlan}
+                    tasks={tasks}
+                    onUpdate={handleSavePlan}
+                    onSyncPlan={setTestPlan}
+                    onSyncTasks={setTasks}
+                    onAddTask={handleAddTask}
+                    onSaveTask={handleSaveTask}
+                    onDeleteTask={handleDeleteTask}
+                  />
+                </div>
+              )}
 
-            {activeTab === 'script' && (
-              <div id="script-panel" role="tabpanel" aria-labelledby="script-tab">
-                <ScriptView
-                  testPlan={testPlan}
-                  tasks={tasks}
-                  onUpdatePlan={handleSavePlan}
-                  onSyncPlan={setTestPlan}
-                  onSyncTasks={setTasks}
-                  onSaveTask={handleSaveTask}
-                  onAddTask={handleAddTask}
-                  onDeleteTask={handleDeleteTask}
-                  onGoToPlan={() => setActiveTab('plan')}
-                />
-              </div>
-            )}
+              {activeTab === 'script' && (
+                <div id="script-panel" role="tabpanel" aria-labelledby="script-tab">
+                  <ScriptView
+                    testPlan={testPlan}
+                    tasks={tasks}
+                    onUpdatePlan={handleSavePlan}
+                    onSyncPlan={setTestPlan}
+                    onSyncTasks={setTasks}
+                    onSaveTask={handleSaveTask}
+                    onAddTask={handleAddTask}
+                    onDeleteTask={handleDeleteTask}
+                    onGoToPlan={() => setActiveTab('plan')}
+                  />
+                </div>
+              )}
 
-            {activeTab === 'observations' && (
-              <div id="observations-panel" role="tabpanel" aria-labelledby="observations-tab">
-                <ObservationsView
-                  data={observations}
-                  onSync={setObservations}
+              {activeTab === 'observations' && (
+                <div id="observations-panel" role="tabpanel" aria-labelledby="observations-tab">
+                  <ObservationsView
+                    data={observations}
+                    onSync={setObservations}
+                    planId={testPlan.id}
+                    productName={testPlan.product}
+                    onAdd={handleAddObservation}
+                    onSave={handleSaveObservation}
+                    onDelete={handleDeleteObservation}
+                    onGoToPlan={() => setActiveTab('plan')}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'findings' && (
+                <FindingsView
+                  data={findings}
+                  onSync={setFindings}
                   planId={testPlan.id}
                   productName={testPlan.product}
-                  onAdd={handleAddObservation}
-                  onSave={handleSaveObservation}
-                  onDelete={handleDeleteObservation}
+                  onAdd={handleAddFinding}
+                  onSave={handleSaveFinding}
+                  onDelete={handleDeleteFinding}
                   onGoToPlan={() => setActiveTab('plan')}
                 />
-              </div>
-            )}
+              )}
 
-            {activeTab === 'findings' && (
-              <FindingsView
-                data={findings}
-                onSync={setFindings}
-                planId={testPlan.id}
-                productName={testPlan.product}
-                onAdd={handleAddFinding}
-                onSave={handleSaveFinding}
-                onDelete={handleDeleteFinding}
-                onGoToPlan={() => setActiveTab('plan')}
-              />
-            )}
-
-            {activeTab === 'reports' && (
-              <ReportsView
-                testPlan={testPlan}
-                tasks={tasks}
-                observations={observations}
-                findings={findings}
-                onGoToPlan={() => setActiveTab('plan')}
-              />
-            )}
+              {activeTab === 'reports' && (
+                <ReportsView
+                  testPlan={testPlan}
+                  tasks={tasks}
+                  observations={observations}
+                  findings={findings}
+                  onGoToPlan={() => setActiveTab('plan')}
+                />
+              )}
+            </Suspense>
           </main>
-        </>
+        </div>
       )}
 
       {/* ══ MODAL ELIMINAR ══════════════════════════════════════════════════ */}

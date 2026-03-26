@@ -155,7 +155,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
               {k.icon}
             </div>
             <div className="gd-kpi-body">
-              <h4 className="gd-kpi-value" style={{ color: k.accent, margin: 0 }}>{k.value}</h4>
+              <h3 className="gd-kpi-value" style={{ color: k.accent, margin: 0 }}>{k.value}</h3>
               <span className="gd-kpi-label">{k.label}</span>
               <span className="gd-kpi-sub">{k.sub}</span>
             </div>
